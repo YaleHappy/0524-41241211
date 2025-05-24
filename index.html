@@ -54,100 +54,120 @@
     </div>
   </div>
 
-  <script>
-    // 設定總數
-    const letsgo1_1_total = 75;
-    const letsgo1_2_total = 71;
+<script>
+  // 設定總數
+  const letsgo1_1_total = 75;
+  const letsgo1_2_total = 71;
 
-    // 製作播放器區塊
-    function makeAudioList(id, prefix, filename, total) {
-      const container = document.getElementById(id);
-      for(let i=1; i<=total; i++) {
-        const col = document.createElement('div');
-        col.className = 'col';
-        col.innerHTML = `
-          <div class="music-card p-3">
-            <div class="music-title">${filename} ${i}</div>
-            <audio controls preload="metadata" data-index="${id}_${i}" src="${prefix}/${filename} ${i}.mp3" style="width:100%"></audio>
-          </div>
-        `;
-        container.appendChild(col);
+  // 製作播放器區塊
+  function makeAudioList(id, prefix, filename, total) {
+    const container = document.getElementById(id);
+    for(let i=1; i<=total; i++) {
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.innerHTML = `
+        <div class="music-card p-3">
+          <div class="music-title">${filename} ${i}</div>
+          <audio controls preload="metadata" data-index="${id}_${i}" src="${prefix}/${filename} ${i}.mp3" style="width:100%"></audio>
+        </div>
+      `;
+      container.appendChild(col);
+    }
+  }
+  makeAudioList('letsgo1-1-list','letsgo1-1','Track', letsgo1_1_total);
+  makeAudioList('letsgo1-2-list','letsgo1-2','lets2', letsgo1_2_total);
+
+  // Loading Bar 管理
+  const allAudio = document.querySelectorAll('audio');
+  const totalAudio = allAudio.length;
+  let loadedCount = 0;
+
+  function updateLoadingBar() {
+    const bar = document.getElementById('loading-bar');
+    const percent = Math.round((loadedCount/totalAudio)*100);
+    bar.style.width = percent + "%";
+    document.getElementById('loading-text').innerText = `音檔載入中，請稍候... (${loadedCount}/${totalAudio})`;
+    if(loadedCount >= totalAudio) {
+      setTimeout(()=>{
+        document.getElementById('loading-bar-area').style.display="none";
+        document.getElementById('loading-text').style.display="none";
+        document.getElementById('main-content').style.display = '';
+      }, 200);
+    }
+  }
+
+  allAudio.forEach(audio=>{
+    let ready = false;
+    // fallback: 最多等 18 秒
+    let fallback = setTimeout(() => {
+      if (!ready) {
+        loadedCount++;
+        updateLoadingBar();
+        ready = true;
       }
-    }
-    makeAudioList('letsgo1-1-list','letsgo1-1','Track', letsgo1_1_total);
-    makeAudioList('letsgo1-2-list','letsgo1-2','lets2', letsgo1_2_total);
+    }, 18000);
 
-    // Loading Bar 管理
-    const allAudio = document.querySelectorAll('audio');
-    const totalAudio = allAudio.length;
-    let loadedCount = 0;
-
-    function updateLoadingBar() {
-      const bar = document.getElementById('loading-bar');
-      const percent = Math.round((loadedCount/totalAudio)*100);
-      bar.style.width = percent + "%";
-      document.getElementById('loading-text').innerText = `音檔載入中，請稍候... (${loadedCount}/${totalAudio})`;
-      if(loadedCount >= totalAudio) {
-        // 移除 loading bar
-        setTimeout(()=>{
-          document.getElementById('loading-bar-area').style.display="none";
-          document.getElementById('loading-text').style.display="none";
-          document.getElementById('main-content').style.display = '';
-        }, 200);
-      }
-    }
-
-    // 監聽每個audio metadata載入
-    allAudio.forEach(audio=>{
-      // 避免某些瀏覽器 onloadedmetadata 不觸發，設timeout fallback
-      let fallback = setTimeout(() => {
-        loadedCount++;
-        updateLoadingBar();
-      }, 12000); // 最多等12秒
-      audio.addEventListener('loadedmetadata', ()=>{
-        clearTimeout(fallback);
-        loadedCount++;
-        updateLoadingBar();
-      });
-      // also handle error
-      audio.addEventListener('error', ()=>{
-        clearTimeout(fallback);
-        loadedCount++;
-        updateLoadingBar();
-      });
-    });
-    updateLoadingBar();
-
-    // 音量控制與記憶
-    const volumeSlider = document.getElementById('globalVolume');
-    const volumeValue = document.getElementById('volumeValue');
-    const audios = () => document.querySelectorAll('audio');
-    const savedVolume = localStorage.getItem('audioVolume') || 0.7;
-    volumeSlider.value = savedVolume;
-    volumeValue.textContent = Number(savedVolume).toFixed(2);
-    function setAllAudioVolume(val) {
-      audios().forEach(a => a.volume = val);
-      volumeValue.textContent = Number(val).toFixed(2);
-      localStorage.setItem('audioVolume', val);
-    }
-    window.addEventListener('DOMContentLoaded', () => {
-      setAllAudioVolume(savedVolume);
-    });
-    volumeSlider.addEventListener('input', function() {
-      setAllAudioVolume(this.value);
-    });
-    setTimeout(() => setAllAudioVolume(savedVolume), 300);
-
-    // 僅允許一首同時播放
-    document.body.addEventListener('play', function(e){
-      if(e.target.tagName === 'AUDIO'){
-        audios().forEach(function(audio){
-          if(audio !== e.target){
-            audio.pause();
+    // loadedmetadata + 確保 duration > 0
+    audio.addEventListener('loadedmetadata', ()=>{
+      // 某些 audio 會觸發 loadedmetadata 但 duration=NaN (還沒抓到)
+      function checkDuration() {
+        if (audio.duration && audio.duration > 0) {
+          if (!ready) {
+            loadedCount++;
+            updateLoadingBar();
+            ready = true;
+            clearTimeout(fallback);
           }
-        });
+        } else {
+          // 還沒抓到 duration，繼續等
+          setTimeout(checkDuration, 300);
+        }
       }
-    }, true);
-  </script>
+      checkDuration();
+    });
+    // also handle error
+    audio.addEventListener('error', ()=>{
+      if (!ready) {
+        loadedCount++;
+        updateLoadingBar();
+        ready = true;
+        clearTimeout(fallback);
+      }
+    });
+  });
+  updateLoadingBar();
+
+  // 音量控制與記憶
+  const volumeSlider = document.getElementById('globalVolume');
+  const volumeValue = document.getElementById('volumeValue');
+  const audios = () => document.querySelectorAll('audio');
+  const savedVolume = localStorage.getItem('audioVolume') || 0.7;
+  volumeSlider.value = savedVolume;
+  volumeValue.textContent = Number(savedVolume).toFixed(2);
+  function setAllAudioVolume(val) {
+    audios().forEach(a => a.volume = val);
+    volumeValue.textContent = Number(val).toFixed(2);
+    localStorage.setItem('audioVolume', val);
+  }
+  window.addEventListener('DOMContentLoaded', () => {
+    setAllAudioVolume(savedVolume);
+  });
+  volumeSlider.addEventListener('input', function() {
+    setAllAudioVolume(this.value);
+  });
+  setTimeout(() => setAllAudioVolume(savedVolume), 300);
+
+  // 僅允許一首同時播放
+  document.body.addEventListener('play', function(e){
+    if(e.target.tagName === 'AUDIO'){
+      audios().forEach(function(audio){
+        if(audio !== e.target){
+          audio.pause();
+        }
+      });
+    }
+  }, true);
+</script>
+
 </body>
 </html>
