@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>MP3 播放器 - letsgo1-1 & letsgo1-2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 5 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f7f9fa;
+      min-height: 100vh;
+    }
+    .main-title {
+      font-size: 2.5rem;
+      letter-spacing: 1.5px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #374151;
+    }
+    .section-card {
+      border-radius: 1.2rem;
+      box-shadow: 0 4px 24px 0 rgba(100, 116, 139, 0.08);
+      margin-bottom: 3rem;
+      overflow: hidden;
+    }
+    .section-header-1 {
+      background: linear-gradient(90deg, #8ed6ff 0%, #74ebd5 100%);
+      color: #205072;
+      padding: 1.25rem 2rem;
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+    }
+    .section-header-2 {
+      background: linear-gradient(90deg, #f7971e 0%, #ffd200 100%);
+      color: #9a6300;
+      padding: 1.25rem 2rem;
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+    }
+    .audio-list-area {
+      max-height: 68vh;
+      overflow-y: auto;
+      padding: 2rem 1.5rem;
+      background: #fff;
+    }
+    .music-card {
+      border-radius: 1rem;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 1px 6px rgba(80,80,80,0.07);
+      transition: transform 0.08s;
+      background: #f8fafc;
+    }
+    .music-card:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 2px 12px rgba(80,80,80,0.12);
+      background: #e6faff;
+    }
+    .music-title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #334155;
+      margin-bottom: 0.5rem;
+    }
+    @media (max-width: 992px) {
+      .audio-list-area {
+        max-height: 40vh;
+        padding: 1.2rem 0.7rem;
+      }
+    }
+    @media (max-width: 576px) {
+      .section-header-1, .section-header-2 {
+        font-size: 1.2rem;
+        padding: 1rem 1rem;
+      }
+      .main-title {
+        font-size: 1.4rem;
+      }
+      .audio-list-area {
+        max-height: 300px;
+        padding: 0.8rem 0.2rem;
+      }
+    }
+    .sticky-volume {
+      position: sticky;
+      top: 0;
+      background: #e0f2fe;
+      z-index: 2;
+      box-shadow: 0 2px 16px 0 rgba(160,180,200,0.06);
+      border-radius: 1rem;
+      padding: 1.2rem 2rem;
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="main-title">MP3 播放器</div>
+
+    <!-- 音量控制 -->
+    <div class="sticky-volume mb-4 d-flex flex-wrap align-items-center justify-content-center gap-3">
+      <label for="globalVolume" class="form-label mb-0 fw-bold">全域音量：</label>
+      <input type="range" class="form-range flex-grow-1" min="0" max="1" step="0.01" id="globalVolume" value="0.7" style="max-width:320px;">
+      <span id="volumeValue" class="ms-2 fs-5 text-primary">0.7</span>
+    </div>
+
+    <!-- letsgo1-1 區塊 -->
+    <div class="section-card mb-5">
+      <div class="section-header-1">letsgo1-1</div>
+      <div class="audio-list-area row row-cols-1 row-cols-md-2 row-cols-lg-3 g-2" id="letsgo1-1-list"></div>
+    </div>
+
+    <!-- letsgo1-2 區塊 -->
+    <div class="section-card mb-5">
+      <div class="section-header-2">letsgo1-2</div>
+      <div class="audio-list-area row row-cols-1 row-cols-md-2 row-cols-lg-3 g-2" id="letsgo1-2-list"></div>
+    </div>
+  </div>
+
+  <script>
+    // ======== 生成 letsgo1-1 播放器 ========
+    const letsgo1_1_total = 75;
+    const letsgo1_1_list = document.getElementById('letsgo1-1-list');
+    for(let i=1; i<=letsgo1_1_total; i++) {
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.innerHTML = `
+        <div class="music-card p-3">
+          <div class="music-title">Track ${i}</div>
+          <audio controls preload="metadata" src="letsgo1-1/Track ${i}.mp3" style="width:100%"></audio>
+        </div>
+      `;
+      letsgo1_1_list.appendChild(col);
+    }
+
+    // ======== 生成 letsgo1-2 播放器 ========
+    const letsgo1_2_total = 71;
+    const letsgo1_2_list = document.getElementById('letsgo1-2-list');
+    for(let i=1; i<=letsgo1_2_total; i++) {
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.innerHTML = `
+        <div class="music-card p-3">
+          <div class="music-title">lets2 ${i}</div>
+          <audio controls preload="metadata" src="letsgo1-2/lets2 ${i}.mp3" style="width:100%"></audio>
+        </div>
+      `;
+      letsgo1_2_list.appendChild(col);
+    }
+
+    // ======== 音量控制與記憶 ========
+    const volumeSlider = document.getElementById('globalVolume');
+    const volumeValue = document.getElementById('volumeValue');
+    const audios = () => document.querySelectorAll('audio');
+    // 讀取localStorage音量設定
+    const savedVolume = localStorage.getItem('audioVolume') || 0.7;
+    volumeSlider.value = savedVolume;
+    volumeValue.textContent = savedVolume;
+
+    // 設定全部audio音量
+    function setAllAudioVolume(val) {
+      audios().forEach(a => a.volume = val);
+      volumeValue.textContent = Number(val).toFixed(2);
+      localStorage.setItem('audioVolume', val);
+    }
+    // 頁面載入時設置音量
+    window.addEventListener('DOMContentLoaded', () => {
+      setAllAudioVolume(savedVolume);
+    });
+
+    // 音量滑桿變動時
+    volumeSlider.addEventListener('input', function() {
+      setAllAudioVolume(this.value);
+    });
+
+    // 每次新創的audio元件也應設定音量
+    setTimeout(() => setAllAudioVolume(savedVolume), 300);
+
+    // ======== 僅允許一首同時播放 ========
+    document.body.addEventListener('play', function(e){
+      if(e.target.tagName === 'AUDIO'){
+        audios().forEach(function(audio){
+          if(audio !== e.target){
+            audio.pause();
+          }
+        });
+      }
+    }, true);
+  </script>
+</body>
+</html>
